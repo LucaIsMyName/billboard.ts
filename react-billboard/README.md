@@ -5,7 +5,7 @@ Billboard is a React component library that provides a declarative, component-ba
 ## Installation
 
 ```bash
-npm install react-billboard recharts
+npm install react-billboard
 ```
 
 ## Usage Examples

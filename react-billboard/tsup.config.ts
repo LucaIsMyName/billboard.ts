@@ -7,6 +7,6 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
+  external: ['react', 'react-dom', 'recharts'],
   treeshake: true,
-  external: ['react', 'react-dom', 'highcharts', 'highcharts-react-official']
 });

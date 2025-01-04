@@ -71,14 +71,18 @@ var BillboardDataset = ({
   const processedData = React3.useMemo(() => {
     if (children) {
       return React3__default.default.Children.toArray(children).filter(
-        (child) => React3__default.default.isValidElement(child) && (child.type === BillboardDatapoint || child.type?.displayName === "BillboardDatapoint")
+        (child) => {
+          var _a;
+          return React3__default.default.isValidElement(child) && (child.type === BillboardDatapoint || ((_a = child.type) == null ? void 0 : _a.displayName) === "BillboardDatapoint");
+        }
       ).map((child) => {
+        var _a;
         const props = child.props;
         return {
           x: props.x,
           y: props.y,
           name: props.name,
-          color: props.style?.color || props.color
+          color: ((_a = props.style) == null ? void 0 : _a.color) || props.color
         };
       });
     }
@@ -108,7 +112,8 @@ var ChartComponents = {
   pie: recharts.PieChart,
   scatter: recharts.ScatterChart,
   composed: recharts.LineChart,
-  bubble: recharts.ScatterChart
+  bubble: recharts.ScatterChart,
+  funnel: recharts.FunnelChart
 };
 var DataComponents = {
   line: recharts.Line,
@@ -118,24 +123,32 @@ var DataComponents = {
   scatter: recharts.Scatter
 };
 var BillboardChart = ({ children, className, x, y }) => {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
   const { options } = useBillboard();
-  const childDatasets = React3__default.default.Children.toArray(children).filter((child) => React3__default.default.isValidElement(child) && (child.type === BillboardDataset || child.type?.displayName === "BillboardDataset")).map((child) => {
-    const dataset = child;
+  const childDatasets = React3__default.default.Children.toArray(children).filter((child) => {
+    var _a2;
+    return React3__default.default.isValidElement(child) && (child.type === BillboardDataset || ((_a2 = child.type) == null ? void 0 : _a2.displayName) === "BillboardDataset");
+  }).map((dataset) => {
     try {
       if (dataset.props["data-billboard-dataset"]) {
         return JSON.parse(dataset.props["data-info"]);
       }
+      const childPoints = React3__default.default.Children.toArray(dataset.props.children).filter((datapoint) => {
+        var _a2;
+        return React3__default.default.isValidElement(datapoint) && (datapoint.type === BillboardDatapoint || ((_a2 = datapoint.type) == null ? void 0 : _a2.displayName) === "BillboardDatapoint");
+      }).map((datapoint) => {
+        var _a2;
+        const props = datapoint.props;
+        return {
+          x: props.x,
+          y: props.y,
+          name: props.name,
+          color: ((_a2 = props.style) == null ? void 0 : _a2.color) || props.color
+        };
+      });
       return {
         name: dataset.props.name,
-        data: dataset.props.data || React3__default.default.Children.toArray(dataset.props.children).filter((datapoint) => React3__default.default.isValidElement(datapoint) && (datapoint.type === BillboardDatapoint || datapoint.type?.displayName === "BillboardDatapoint")).map((datapoint) => {
-          const props = datapoint.props;
-          return {
-            x: props.x,
-            y: props.y,
-            name: props.name,
-            color: props.style?.color || props.color
-          };
-        }),
+        data: dataset.props.data || childPoints,
         color: dataset.props.color,
         style: dataset.props.style
       };
@@ -143,25 +156,56 @@ var BillboardChart = ({ children, className, x, y }) => {
       console.error("Error processing dataset:", error);
       return null;
     }
-  }).filter(Boolean);
+  }).filter((dataset) => dataset !== null);
   const allDatasets = [...options.datasets || [], ...childDatasets];
-  console.log("All Datasets:", allDatasets);
-  console.log("First Dataset Data:", allDatasets[0]?.data);
-  const formattedData = allDatasets[0]?.data?.map((point, index) => {
+  const formattedData = ((_a = allDatasets[0]) == null ? void 0 : _a.data.map((point, index) => {
     const dataPoint = {
       name: point.x
     };
     allDatasets.forEach((dataset) => {
-      if (dataset.data?.[index]) {
+      if (dataset.data[index]) {
         dataPoint[dataset.name] = dataset.data[index].y;
       }
     });
-    console.log("Formatted Point:", dataPoint);
     return dataPoint;
-  }) || [];
-  console.log("Formatted Data:", formattedData);
+  })) || [];
   const ChartComponent = ChartComponents[options.type] || recharts.LineChart;
-  const DataComponent = DataComponents[options.type];
+  DataComponents[options.type] || recharts.Line;
+  if (options.type === "funnel") {
+    const funnelData = ((_b = allDatasets[0]) == null ? void 0 : _b.data.map((point) => ({
+      value: point.y,
+      name: point.name || point.x,
+      fill: point.color || allDatasets[0].color
+    }))) || [];
+    const funnelStyle = ((_d = (_c = allDatasets[0]) == null ? void 0 : _c.style) == null ? void 0 : _d.funnel) || {};
+    return /* @__PURE__ */ jsxRuntime.jsx("div", { className, children: /* @__PURE__ */ jsxRuntime.jsx(
+      recharts.ResponsiveContainer,
+      {
+        width: "100%",
+        height: "100%",
+        children: /* @__PURE__ */ jsxRuntime.jsxs(recharts.FunnelChart, { children: [
+          (_e = options.hasTooltip) != null ? _e : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            recharts.Funnel,
+            {
+              dataKey: "value",
+              data: funnelData,
+              isAnimationActive: funnelStyle.isAnimationActive !== false,
+              children: /* @__PURE__ */ jsxRuntime.jsx(
+                recharts.LabelList,
+                {
+                  position: funnelStyle.position || "right",
+                  fill: funnelStyle.labelFill || "#000",
+                  stroke: funnelStyle.labelStroke || "none",
+                  dataKey: "name"
+                }
+              )
+            }
+          )
+        ] })
+      }
+    ) });
+  }
   if (options.type === "treemap") {
     const treemapData = {
       name: "root",
@@ -224,8 +268,8 @@ var BillboardChart = ({ children, className, x, y }) => {
               name: "y"
             }
           ),
-          /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, { cursor: { strokeDasharray: "3 3" } }),
-          /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {}),
+          (_f = options.hasTooltip) != null ? _f : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, { cursor: { strokeDasharray: "3 3" } }),
+          (_g = options.hasLegend) != null ? _g : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, { className: options.legend.className || "" }),
           allDatasets.map((dataset) => /* @__PURE__ */ jsxRuntime.jsx(
             recharts.Scatter,
             {
@@ -263,8 +307,11 @@ var BillboardChart = ({ children, className, x, y }) => {
                 dataKey: "value",
                 nameKey: "name",
                 label: true,
-                innerRadius: index === 0 ? 0 : 50 + 20 * index,
-                outerRadius: 50 + 20 * (index + 1),
+                innerRadius: 50 + 20 * (index + 1) - 20 * (index + 1) / allDatasets.length,
+                outerRadius: (
+                  // calculate outer radius based on space available
+                  50 + 20 * (index + 2) - 20 * (index + 2) / allDatasets.length
+                ),
                 style: {
                   fill: allDatasets[index].color,
                   zIndex: index
@@ -272,8 +319,8 @@ var BillboardChart = ({ children, className, x, y }) => {
               },
               index
             )),
-            options.hasTooltip ?? /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
-            options.hasLegend ?? /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
+            (_h = options.hasTooltip) != null ? _h : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
+            (_i = options.hasLegend) != null ? _i : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
           ] })
         }
       ) });
@@ -287,7 +334,7 @@ var BillboardChart = ({ children, className, x, y }) => {
           /* @__PURE__ */ jsxRuntime.jsx(
             recharts.Pie,
             {
-              data: allDatasets[0]?.data?.map((point) => ({
+              data: (_k = (_j = allDatasets[0]) == null ? void 0 : _j.data) == null ? void 0 : _k.map((point) => ({
                 name: point.x,
                 value: point.y,
                 fill: point.color
@@ -297,8 +344,8 @@ var BillboardChart = ({ children, className, x, y }) => {
               label: true
             }
           ),
-          options.hasTooltip ?? /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
-          options.hasLegend ?? /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
+          (_l = options.hasTooltip) != null ? _l : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
+          (_m = options.hasLegend) != null ? _m : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
         ] })
       }
     ) });
@@ -319,29 +366,73 @@ var BillboardChart = ({ children, className, x, y }) => {
               recharts.XAxis,
               {
                 dataKey: "name",
-                label: x?.title ? { value: x.title, position: "bottom" } : void 0
+                label: (x == null ? void 0 : x.title) ? { value: x.title, position: "bottom" } : void 0
               }
             ),
-            /* @__PURE__ */ jsxRuntime.jsx(recharts.YAxis, { label: y?.title ? { value: y.title, angle: -90, position: "left" } : void 0 }),
-            options.hasTooltip ?? /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
-            options.hasLegend ?? /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {}),
-            allDatasets.map((dataset) => /* @__PURE__ */ jsxRuntime.jsx(
-              DataComponent,
-              {
-                type: "monotone",
-                dataKey: dataset.name,
-                stroke: dataset.color,
-                fill: dataset.color,
-                strokeWidth: dataset.style?.strokeWidth,
-                fillOpacity: dataset.style?.fillOpacity,
-                dot: dataset.style?.dot ? {
-                  strokeWidth: dataset.style.strokeWidth || 1,
-                  r: dataset.style.dotRadius || 3,
-                  fill: dataset.color
-                } : false
-              },
-              dataset.name
-            ))
+            /* @__PURE__ */ jsxRuntime.jsx(recharts.YAxis, { label: (y == null ? void 0 : y.title) ? { value: y.title, angle: -90, position: "left" } : void 0 }),
+            /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
+            /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {}),
+            allDatasets.map((dataset) => {
+              var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2;
+              switch (options.type) {
+                case "line":
+                  return /* @__PURE__ */ jsxRuntime.jsx(
+                    recharts.Line,
+                    {
+                      type: "monotone",
+                      dataKey: dataset.name,
+                      stroke: dataset.color,
+                      fill: dataset.color,
+                      strokeWidth: (_a2 = dataset.style) == null ? void 0 : _a2.strokeWidth,
+                      fillOpacity: (_b2 = dataset.style) == null ? void 0 : _b2.fillOpacity,
+                      dot: ((_c2 = dataset.style) == null ? void 0 : _c2.dot) ? {
+                        strokeWidth: dataset.style.strokeWidth || 1,
+                        r: dataset.style.dotRadius || 3,
+                        fill: dataset.color
+                      } : false
+                    },
+                    dataset.name
+                  );
+                case "area":
+                  return /* @__PURE__ */ jsxRuntime.jsx(
+                    recharts.Area,
+                    {
+                      type: "monotone",
+                      dataKey: dataset.name,
+                      stroke: dataset.color,
+                      fill: dataset.color,
+                      strokeWidth: (_d2 = dataset.style) == null ? void 0 : _d2.strokeWidth,
+                      fillOpacity: (_e2 = dataset.style) == null ? void 0 : _e2.fillOpacity
+                    },
+                    dataset.name
+                  );
+                case "bar":
+                  return /* @__PURE__ */ jsxRuntime.jsx(
+                    recharts.Bar,
+                    {
+                      dataKey: dataset.name,
+                      stroke: dataset.color,
+                      fill: dataset.color,
+                      strokeWidth: (_f2 = dataset.style) == null ? void 0 : _f2.strokeWidth,
+                      fillOpacity: (_g2 = dataset.style) == null ? void 0 : _g2.fillOpacity
+                    },
+                    dataset.name
+                  );
+                default:
+                  return /* @__PURE__ */ jsxRuntime.jsx(
+                    recharts.Line,
+                    {
+                      type: "monotone",
+                      dataKey: dataset.name,
+                      stroke: dataset.color,
+                      fill: dataset.color,
+                      strokeWidth: (_h2 = dataset.style) == null ? void 0 : _h2.strokeWidth,
+                      fillOpacity: (_i2 = dataset.style) == null ? void 0 : _i2.fillOpacity
+                    },
+                    dataset.name
+                  );
+              }
+            })
           ]
         }
       )
@@ -353,8 +444,9 @@ var BillboardLegend = ({
   children,
   className
 }) => {
+  var _a;
   const { options } = useBillboard();
-  if (!options.datasets?.length)
+  if (!((_a = options.datasets) == null ? void 0 : _a.length))
     return null;
   return /* @__PURE__ */ jsxRuntime.jsx("div", { className, children: children || /* @__PURE__ */ jsxRuntime.jsx("ul", { className: "flex gap-4", children: options.datasets.map((dataset, index) => /* @__PURE__ */ jsxRuntime.jsxs("li", { className: "flex items-center gap-2", children: [
     /* @__PURE__ */ jsxRuntime.jsx(

@@ -1,9 +1,20 @@
 import React from "react";
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Treemap } from "recharts";
-import { BillboardChartProps, Dataset } from "../../types";
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, FunnelChart, Funnel, LabelList, TooltipProps, Treemap } from "recharts";
+import { BillboardChartProps, Dataset, DataPoint } from "../../types";
 import { useBillboard } from "../../context/BillboardContext";
 import { BillboardDataset } from "./BillboardDataset";
 import { BillboardDatapoint } from "./BillboardDatapoint";
+
+type ChartComponentType = typeof ChartComponents;
+type DataComponentType = typeof DataComponents;
+type ChartType = keyof ChartComponentType;
+type DataType = keyof DataComponentType;
+
+interface UnitOptions {
+  symbol?: string;
+  label?: string;
+  id?: number | string;
+}
 
 const ChartComponents = {
   line: LineChart,
@@ -13,6 +24,7 @@ const ChartComponents = {
   scatter: ScatterChart,
   composed: LineChart,
   bubble: ScatterChart,
+  funnel: FunnelChart,
 } as const;
 
 const DataComponents = {
@@ -23,69 +35,131 @@ const DataComponents = {
   scatter: Scatter,
 } as const;
 
+// Helper function for unit formatting
+const formatWithUnit = (value: any, unit?: UnitOptions): string => {
+  if (!unit) return String(value);
+  const symbol = unit.symbol || "";
+  return `${value}${symbol}`;
+};
+
+// Custom Tooltip Component
+interface CustomTooltipProps extends TooltipProps<any, any> {
+  xUnit?: UnitOptions;
+  yUnit?: UnitOptions;
+}
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, xUnit, yUnit }) => {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div className="bg-white p-2 border rounded shadow">
+      <p className="text-sm mb-1">
+        {`${label}${xUnit?.symbol || ""}`}
+        {xUnit?.label && <span className="text-gray-500 text-xs"> ({xUnit.label})</span>}
+      </p>
+      {payload.map((entry: any, index: number) => (
+        <p
+          key={index}
+          style={{ color: entry.color }}
+          className="text-sm">
+          {`${entry.name}: ${formatWithUnit(entry.value, yUnit)}`}
+          {yUnit?.label && <span className="text-gray-500 text-xs"> ({yUnit.label})</span>}
+        </p>
+      ))}
+    </div>
+  );
+};
+
 export const BillboardChart: React.FC<BillboardChartProps> = ({ children, className, x, y }) => {
   const { options } = useBillboard();
 
   // Extract datasets from children
   const childDatasets = React.Children.toArray(children)
-    .filter((child) => React.isValidElement(child) && (child.type === BillboardDataset || (child.type as any)?.displayName === "BillboardDataset"))
-    .map((child) => {
-      const dataset = child as React.ReactElement;
+    .filter((child): child is React.ReactElement => React.isValidElement(child) && (child.type === BillboardDataset || (child.type as any)?.displayName === "BillboardDataset"))
+    .map((dataset) => {
       try {
         if (dataset.props["data-billboard-dataset"]) {
-          return JSON.parse(dataset.props["data-info"]);
+          return JSON.parse(dataset.props["data-info"]) as Dataset;
         }
-        // Handle direct props
+
+        const childPoints = React.Children.toArray(dataset.props.children)
+          .filter((datapoint): datapoint is React.ReactElement => React.isValidElement(datapoint) && (datapoint.type === BillboardDatapoint || (datapoint.type as any)?.displayName === "BillboardDatapoint"))
+          .map((datapoint): DataPoint => {
+            const props = datapoint.props;
+            return {
+              x: props.x,
+              y: props.y,
+              name: props.name,
+              color: props.style?.color || props.color,
+            };
+          });
+
         return {
           name: dataset.props.name,
-          data:
-            dataset.props.data ||
-            React.Children.toArray(dataset.props.children)
-              .filter((datapoint) => React.isValidElement(datapoint) && (datapoint.type === BillboardDatapoint || (datapoint.type as any)?.displayName === "BillboardDatapoint"))
-              .map((datapoint) => {
-                const props = (datapoint as React.ReactElement).props;
-                return {
-                  x: props.x,
-                  y: props.y,
-                  name: props.name,
-                  color: props.style?.color || props.color,
-                };
-              }),
+          data: dataset.props.data || childPoints,
           color: dataset.props.color,
           style: dataset.props.style,
-        };
+        } as Dataset;
       } catch (error) {
         console.error("Error processing dataset:", error);
         return null;
       }
     })
-    .filter(Boolean);
+    .filter((dataset): dataset is Dataset => dataset !== null);
 
-  // Combine prop datasets with child datasets
   const allDatasets = [...(options.datasets || []), ...childDatasets];
-
-  console.log("All Datasets:", allDatasets);
-  console.log("First Dataset Data:", allDatasets[0]?.data);
 
   // Format data for Recharts
   const formattedData =
-    allDatasets[0]?.data?.map((point, index) => {
-      const dataPoint = {
+    allDatasets[0]?.data.map((point, index) => {
+      const dataPoint: Record<string, any> = {
         name: point.x,
       };
       allDatasets.forEach((dataset) => {
-        if (dataset.data?.[index]) {
+        if (dataset.data[index]) {
           dataPoint[dataset.name] = dataset.data[index].y;
         }
       });
-      console.log("Formatted Point:", dataPoint);
       return dataPoint;
     }) || [];
 
-  console.log("Formatted Data:", formattedData);
+  const ChartComponent = ChartComponents[options.type as ChartType] || LineChart;
+  const DataComponent = DataComponents[options.type as DataType] || Line;
 
-  const ChartComponent = ChartComponents[options.type] || LineChart;
-  const DataComponent = DataComponents[options.type] as typeof Line;
+  if (options.type === "funnel") {
+    // Transform data for funnel chart
+    const funnelData =
+      allDatasets[0]?.data.map((point) => ({
+        value: point.y,
+        name: point.name || point.x,
+        fill: point.color || allDatasets[0].color,
+      })) || [];
+
+    const funnelStyle = allDatasets[0]?.style?.funnel || {};
+
+    return (
+      <div className={className}>
+        <ResponsiveContainer
+          width="100%"
+          height="100%">
+          <FunnelChart>
+            {options.hasTooltip ?? <Tooltip />}
+            <Funnel
+              dataKey="value"
+              data={funnelData}
+              isAnimationActive={funnelStyle.isAnimationActive !== false}>
+              <LabelList
+                position={funnelStyle.position || "right"}
+                fill={funnelStyle.labelFill || "#000"}
+                stroke={funnelStyle.labelStroke || "none"}
+                dataKey="name"
+              />
+            </Funnel>
+          </FunnelChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
 
   if (options.type === "treemap") {
     // Restructure data for treemap
@@ -143,8 +217,8 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
               dataKey="y"
               name="y"
             />
-            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-            <Legend />
+            {options.hasTooltip ?? <Tooltip cursor={{ strokeDasharray: "3 3" }} />}
+            {options.hasLegend ?? <Legend className={options.legend.className || ""} />}
             {allDatasets.map((dataset) => (
               <Scatter
                 key={dataset.name}
@@ -186,8 +260,11 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
                   dataKey="value"
                   nameKey="name"
                   label
-                  innerRadius={index === 0 ? 0 : 50 + 20 * index}
-                  outerRadius={50 + 20 * (index + 1)}
+                  innerRadius={50 + 20 * (index + 1) - (20 * (index + 1)) / allDatasets.length}
+                  outerRadius={
+                    // calculate outer radius based on space available
+                    50 + 20 * (index + 2) - (20 * (index + 2)) / allDatasets.length
+                  }
                   style={{
                     fill: allDatasets[index].color,
                     zIndex: index,
@@ -226,6 +303,35 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
     );
   }
 
+  const formatWithUnit = (value: any, unit?: UnitOptions) => {
+    if (!unit) return value;
+    const symbol = unit.symbol || "";
+    return `${value}${symbol}`;
+  };
+
+  // Create custom Tooltip content
+  const CustomTooltip = ({ active, payload, label, xUnit, yUnit }: any) => {
+    if (!active || !payload || !payload.length) return null;
+
+    return (
+      <div className="bg-white p-2 border rounded shadow">
+        <p className="text-sm mb-1">
+          {`${label}${xUnit?.symbol || ""}`}
+          {xUnit?.label && <span className="text-gray-500 text-xs"> ({xUnit.label})</span>}
+        </p>
+        {payload.map((entry: any, index: number) => (
+          <p
+            key={index}
+            style={{ color: entry.color }}
+            className="text-sm">
+            {`${entry.name}: ${formatWithUnit(entry.value, yUnit)}`}
+            {yUnit?.label && <span className="text-gray-500 text-xs"> ({yUnit.label})</span>}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className={className}>
       <ResponsiveContainer
@@ -240,28 +346,91 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
             label={x?.title ? { value: x.title, position: "bottom" } : undefined}
           />
           <YAxis label={y?.title ? { value: y.title, angle: -90, position: "left" } : undefined} />
-          {options.hasTooltip ?? <Tooltip />}
-          {options.hasLegend ?? <Legend />}
-          {allDatasets.map((dataset) => (
-            <DataComponent
-              key={dataset.name}
-              type="monotone"
-              dataKey={dataset.name}
-              stroke={dataset.color}
-              fill={dataset.color}
-              strokeWidth={dataset.style?.strokeWidth}
-              fillOpacity={dataset.style?.fillOpacity}
-              dot={
-                dataset.style?.dot
-                  ? {
-                      strokeWidth: dataset.style.strokeWidth || 1,
-                      r: dataset.style.dotRadius || 3,
-                      fill: dataset.color,
+          <Tooltip />
+          <Legend />
+          {/* {allDatasets.map((dataset) => {
+            const Component = DataComponents[options.type as DataType] || Line;
+            return (
+              <Component
+                key={dataset.name}
+                type="monotone"
+                dataKey={dataset.name}
+                stroke={dataset.color}
+                fill={dataset.color}
+                strokeWidth={dataset.style?.strokeWidth}
+                fillOpacity={dataset.style?.fillOpacity}
+                dot={
+                  dataset.style?.dot
+                    ? {
+                        strokeWidth: dataset.style.strokeWidth || 1,
+                        r: dataset.style.dotRadius || 3,
+                        fill: dataset.color,
+                      }
+                    : false
+                }
+              />
+            );
+          })} */}
+          {allDatasets.map((dataset) => {
+            switch (options.type) {
+              case "line":
+                return (
+                  <Line
+                    key={dataset.name}
+                    type="monotone"
+                    dataKey={dataset.name}
+                    stroke={dataset.color}
+                    fill={dataset.color}
+                    strokeWidth={dataset.style?.strokeWidth}
+                    fillOpacity={dataset.style?.fillOpacity}
+                    dot={
+                      dataset.style?.dot
+                        ? {
+                            strokeWidth: dataset.style.strokeWidth || 1,
+                            r: dataset.style.dotRadius || 3,
+                            fill: dataset.color,
+                          }
+                        : false
                     }
-                  : false
-              }
-            />
-          ))}
+                  />
+                );
+              case "area":
+                return (
+                  <Area
+                    key={dataset.name}
+                    type="monotone"
+                    dataKey={dataset.name}
+                    stroke={dataset.color}
+                    fill={dataset.color}
+                    strokeWidth={dataset.style?.strokeWidth}
+                    fillOpacity={dataset.style?.fillOpacity}
+                  />
+                );
+              case "bar":
+                return (
+                  <Bar
+                    key={dataset.name}
+                    dataKey={dataset.name}
+                    stroke={dataset.color}
+                    fill={dataset.color}
+                    strokeWidth={dataset.style?.strokeWidth}
+                    fillOpacity={dataset.style?.fillOpacity}
+                  />
+                );
+              default:
+                return (
+                  <Line
+                    key={dataset.name}
+                    type="monotone"
+                    dataKey={dataset.name}
+                    stroke={dataset.color}
+                    fill={dataset.color}
+                    strokeWidth={dataset.style?.strokeWidth}
+                    fillOpacity={dataset.style?.fillOpacity}
+                  />
+                );
+            }
+          })}
         </ChartComponent>
       </ResponsiveContainer>
     </div>

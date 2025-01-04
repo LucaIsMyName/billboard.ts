@@ -1,4 +1,4 @@
-export type ChartType = "line" | "area" | "bar" | "scatter" | "pie" | "composed" | "treemap";
+export type ChartType = 'line' | 'area' | 'bar' | 'scatter' | 'pie' | 'composed' | 'treemap' | 'funnel';
 
 export type DataComponentType = "line" | "area" | "bar" | "scatter" | "pie";
 
@@ -7,6 +7,13 @@ export interface AxisOptions {
   min?: number;
   max?: number;
   scale?: "auto" | "linear" | "pow" | "sqrt" | "log" | "identity" | "time" | "band" | "point" | "ordinal";
+  unit?: UnitOptions;
+}
+
+interface UnitOptions {
+  symbol?: string;
+  label?: string;
+  id?: number | string;
 }
 
 export interface DataPoint {
@@ -46,6 +53,7 @@ export interface DatasetStyle {
   cx?: string;
   cy?: string;
   label?: boolean;
+  funnel?: FunnelStyle;
   [key: string]: any;
 }
 
@@ -98,4 +106,11 @@ export interface BillboardDatasetProps {
   style?: DatasetStyle;
   componentType?: DataComponentType;
   className?: string;
+}
+
+export interface FunnelStyle extends DatasetStyle {
+  position?: 'right' | 'left' | 'center';
+  labelFill?: string;
+  labelStroke?: string;
+  isAnimationActive?: boolean;
 }
