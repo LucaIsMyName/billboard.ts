@@ -1,4 +1,4 @@
-export type ChartType = 'line' | 'area' | 'scatter' | 'bar' | 'donut' | 'pie' | 'bubble';
+export type ChartType = 'line' | 'area' | 'scatter' | 'bar' | 'pie';
 
 export interface AxisOptions {
   title?: string;
@@ -9,13 +9,37 @@ export interface AxisOptions {
 export interface DataPoint {
   x: number | string;
   y: number;
+  color?: string;
   [key: string]: any;
+}
+
+export interface DataPointStyle {
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+  opacity?: number;
+  radius?: number;
+}
+
+export interface DatasetStyle {
+  stroke?: string;
+  fill?: string;
+  fillOpacity?: number;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+  dot?: boolean | object;
+  activeDot?: object;
+  label?: boolean | object;
+  connectNulls?: boolean;
+  type?: 'basis' | 'linear' | 'monotone' | 'natural' | 'step';
 }
 
 export interface Dataset {
   name: string;
   data: DataPoint[];
   color?: string;
+  style?: DatasetStyle;
 }
 
 export interface BillboardOptions {
@@ -45,46 +69,8 @@ export interface BillboardChartProps extends BillboardComponentProps {
 }
 
 export interface BillboardDatasetProps {
-  data: DataPoint[];
-  name?: string;
+  name: string;
+  data?: DataPoint[];
   color?: string;
-}
-
-// Existing types...
-
-export interface DataPointStyle {
-  color?: string;
-  radius?: number;              // Size of point marker
-  symbol?: 'circle' | 'square' | 'diamond' | 'triangle' | 'triangle-down';
-  fillColor?: string;          // For bubble charts or point fill
-  lineWidth?: number;          // Border width
-  lineColor?: string;          // Border color
-  opacity?: number;            // 0-1
-  borderRadius?: number;       // For column/bar charts
-  className?: string;          // CSS class for the point
-  cursor?: string;             // CSS cursor type
-  dashStyle?: 'Solid' | 'Dash' | 'Dot' | 'LongDash' | 'ShortDash';
-}
-
-export interface DatasetStyle {
-  color?: string;              // Main color for the series
-  lineWidth?: number;          // For line charts
-  lineCap?: 'round' | 'square';
-  dashStyle?: 'Solid' | 'Dash' | 'Dot' | 'LongDash' | 'ShortDash';
-  opacity?: number;            // 0-1
-  fillOpacity?: number;        // For area charts
-  marker?: {                   // Default marker style for all points
-    enabled?: boolean;
-    radius?: number;
-    symbol?: 'circle' | 'square' | 'diamond' | 'triangle' | 'triangle-down';
-    fillColor?: string;
-    lineWidth?: number;
-    lineColor?: string;
-  };
-  borderRadius?: number;       // For bar/column charts
-  borderWidth?: number;
-  borderColor?: string;
-  className?: string;          // CSS class for the series
-  cursor?: string;             // CSS cursor type
-  shadow?: boolean | object;   // Enable shadows
+  style?: DatasetStyle;
 }

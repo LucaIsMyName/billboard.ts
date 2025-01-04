@@ -1,43 +1,94 @@
-# Billboard Chart Library Documentation
+# Billboard Chart Library
 
-Billboard is a React component library that provides a declarative, component-based API for creating charts using Highcharts. It offers both a prop-based and component-based approach to chart creation, with full TypeScript support.
+Billboard is a React component library that provides a declarative, component-based API for creating charts using Recharts. It offers both a props-based and component-based approach, making it flexible for different usage patterns while maintaining a consistent API.
 
 ## Installation
 
 ```bash
-npm install react-billboard highcharts highcharts-react-official
+npm install react-billboard recharts
 ```
 
-## Basic Usage
+## Usage Examples
 
+### Props-based Approach
 ```tsx
 import { Billboard } from 'react-billboard';
 
-// Simple usage with props
-const SimpleChart = () => (
+const MyChart = () => (
   <Billboard 
     type="line"
-    datasets={[
-      {
-        name: "Revenue",
-        data: [
-          { x: "Jan", y: 1000 },
-          { x: "Feb", y: 1500 }
-        ]
+    datasets={[{
+      name: "Revenue",
+      data: [
+        { x: "Jan", y: 1000 },
+        { x: "Feb", y: 1500 },
+        { x: "Mar", y: 1200 }
+      ],
+      color: "#4299E1",
+      style: {
+        strokeWidth: 2,
+        dot: true,
       }
-    ]}
-  />
+    }]}
+  >
+    <Billboard.Chart className="h-[400px]" />
+  </Billboard>
 );
+```
 
-// Component-based usage
-const ComponentChart = () => (
+### Component-based Approach
+```tsx
+const MyComponentChart = () => (
   <Billboard type="line">
-    <Billboard.Title>Monthly Revenue</Billboard.Title>
-    <Billboard.Chart>
-      <Billboard.Dataset name="Revenue">
+    <Billboard.Chart className="h-[400px]">
+      <Billboard.Dataset 
+        name="Revenue" 
+        color="#4299E1"
+        style={{
+          strokeWidth: 2,
+          dot: true,
+        }}
+      >
         <Billboard.Datapoint x="Jan" y={1000} />
         <Billboard.Datapoint x="Feb" y={1500} />
+        <Billboard.Datapoint x="Mar" y={1200} />
       </Billboard.Dataset>
+    </Billboard.Chart>
+  </Billboard>
+);
+```
+
+### Area Chart with Multiple Datasets
+```tsx
+const MyAreaChart = () => (
+  <Billboard type="area">
+    <Billboard.Chart className="h-[400px]">
+      <Billboard.Dataset
+        name="Revenue"
+        color="#4299E1"
+        style={{
+          fillOpacity: 0.3,
+          strokeWidth: 2,
+        }}
+        data={[
+          { x: "Jan", y: 1000 },
+          { x: "Feb", y: 1500 },
+          { x: "Mar", y: 1200 }
+        ]}
+      />
+      <Billboard.Dataset
+        name="Profit"
+        color="#48BB78"
+        style={{
+          fillOpacity: 0.3,
+          strokeWidth: 2,
+        }}
+        data={[
+          { x: "Jan", y: 300 },
+          { x: "Feb", y: 450 },
+          { x: "Mar", y: 350 }
+        ]}
+      />
     </Billboard.Chart>
   </Billboard>
 );
@@ -47,39 +98,21 @@ const ComponentChart = () => (
 
 ### `<Billboard>`
 
-The main container component for creating charts.
+Main container component for creating charts.
 
 #### Props
-
-- `type` (required): The type of chart to render
-  - Options: 'line' | 'area' | 'bar' | 'scatter' | 'pie' | 'donut' | 'bubble'
-- `datasets`: Array of dataset objects (for prop-based usage)
-- `className`: CSS class name for styling
-- `children`: React nodes (for component-based usage)
-
-### `<Billboard.Title>`
-
-Renders the chart title.
-
-#### Props
-- `children`: React node (string or element)
-- `className`: CSS class name for styling
-
-### `<Billboard.Description>`
-
-Renders a description below the title.
-
-#### Props
-- `children`: React node (string or element)
-- `className`: CSS class name for styling
+- `type` (required): `'line' | 'area' | 'bar' | 'scatter' | 'pie'`
+- `datasets?`: Array of dataset objects (for props-based usage)
+- `className?`: CSS class name
+- `children?`: React nodes
 
 ### `<Billboard.Chart>`
 
-The chart container component.
+Chart container component.
 
 #### Props
-- `className`: CSS class name for styling
-- `x`: X-axis configuration object
+- `className?`: CSS class name (required for setting height)
+- `x?`: X-axis configuration
   ```typescript
   {
     title?: string;
@@ -87,158 +120,105 @@ The chart container component.
     max?: number;
   }
   ```
-- `y`: Y-axis configuration object (same structure as x)
-- `children`: Dataset components
+- `y?`: Y-axis configuration (same as x)
+- `children?`: Dataset components
 
 ### `<Billboard.Dataset>`
 
-Container for data points.
+Dataset container component.
 
 #### Props
-- `name`: Dataset name (required)
-- `color`: Color for the dataset series
-- `data`: Array of data points (for prop-based usage)
-- `children`: Datapoint components
+- `name`: Dataset identifier
+- `color?`: Dataset color
+- `data?`: Array of data points
+- `style?`: Dataset styling options
+  ```typescript
+  {
+    strokeWidth?: number;
+    fillOpacity?: number;
+    dot?: boolean;
+  }
+  ```
+- `children?`: Datapoint components
 
 ### `<Billboard.Datapoint>`
 
 Individual data point component. Must be a child of Dataset.
 
 #### Props
-- `x`: X value (string or number)
+- `x`: X value (string | number)
 - `y`: Y value (number)
-- `z`: Z value (for bubble charts)
-- `name`: Point name (for pie charts)
-- `color`: Individual point color
-
-### `<Billboard.Legend>`
-
-Renders the chart legend.
-
-#### Props
-- `className`: CSS class name for styling
-
-## Examples
-
-### Line Chart
-```tsx
-<Billboard type="line">
-  <Billboard.Title>Monthly Revenue</Billboard.Title>
-  <Billboard.Description>Financial performance over time</Billboard.Description>
-  <Billboard.Chart 
-    className="h-96"
-    y={{ title: "Amount ($)" }}
-    x={{title: "Years"}}
-  >
-    <Billboard.Dataset name="Revenue" color="#4299E1">
-      <Billboard.Datapoint x="Jan" y={1000} />
-      <Billboard.Datapoint x="Feb" y={1500} />
-      <Billboard.Datapoint x="Mar" y={1200} />
-    </Billboard.Dataset>
-  </Billboard.Chart>
-  <Billboard.Legend />
-</Billboard>
-```
-
-### Pie Chart
-```tsx
-<Billboard type="pie">
-  <Billboard.Chart className="h-96">
-    <Billboard.Dataset name="Market Share">
-      <Billboard.Datapoint name="Product A" y={35} />
-      <Billboard.Datapoint name="Product B" y={25} />
-      <Billboard.Datapoint name="Product C" y={20} />
-    </Billboard.Dataset>
-  </Billboard.Chart>
-</Billboard>
-```
-
-### Bubble Chart
-```tsx
-<Billboard type="bubble">
-  <Billboard.Chart 
-    className="h-96"
-    x={{ title: "Price" }}
-    y={{ title: "Performance" }}
-  >
-    <Billboard.Dataset name="Products">
-      <Billboard.Datapoint x={50} y={70} z={15} name="Product A" />
-      <Billboard.Datapoint x={65} y={85} z={20} name="Product B" />
-    </Billboard.Dataset>
-  </Billboard.Chart>
-</Billboard>
-```
-
-### Mixed Usage (Props and Components)
-```tsx
-const data = [
-  { x: "Jan", y: 1000 },
-  { x: "Feb", y: 1500 }
-];
-
-<Billboard type="line">
-  <Billboard.Title>Mixed Usage Example</Billboard.Title>
-  <Billboard.Dataset 
-    name="Revenue"
-    data={data}  // Using props
-  />
-  <Billboard.Dataset name="Profit">  // Using components
-    <Billboard.Datapoint x="Jan" y={300} />
-    <Billboard.Datapoint x="Feb" y={450} />
-  </Billboard.Dataset>
-</Billboard>
-```
+- `color?`: Point color
+- `style?`: Point-specific styling
 
 ## TypeScript Types
 
 ```typescript
-type ChartType = 'line' | 'area' | 'scatter' | 'bar' | 'donut' | 'pie' | 'bubble';
-
-interface AxisOptions {
-  title?: string;
-  min?: number;
-  max?: number;
-}
+type ChartType = 'line' | 'area' | 'bar' | 'scatter' | 'pie';
 
 interface DataPoint {
-  x: number | string;
+  x: string | number;
   y: number;
-  z?: number;
-  name?: string;
   color?: string;
+}
+
+interface DatasetStyle {
+  strokeWidth?: number;
+  fillOpacity?: number;
+  dot?: boolean;
 }
 
 interface Dataset {
   name: string;
   data: DataPoint[];
   color?: string;
+  style?: DatasetStyle;
 }
 ```
 
 ## Styling
 
-All components accept a `className` prop for styling using CSS. The library is designed to be style-agnostic, allowing for complete customization of the appearance.
+The library uses Recharts under the hood and supports two types of styling:
 
+1. Container styling through className props
 ```tsx
-<Billboard className="my-8 p-4 bg-white rounded shadow">
-  <Billboard.Title className="text-2xl font-bold text-gray-800">
-    Styled Chart
-  </Billboard.Title>
-  <Billboard.Chart className="h-96 mt-4" />
-</Billboard>
+<Billboard.Chart className="h-[400px] w-full" />
+```
+
+2. Chart-specific styling through the style prop
+```tsx
+<Billboard.Dataset
+  style={{
+    strokeWidth: 2,
+    fillOpacity: 0.3,
+    dot: true
+  }}
+/>
 ```
 
 ## Best Practices
 
-1. Always wrap `<Billboard.Datapoint>` components within a `<Billboard.Dataset>`
-2. Provide explicit dimensions through className (especially height)
-3. Use axis titles for better chart clarity
-4. Provide meaningful colors for data visualization
-5. Use the Legend component when multiple datasets are present
+1. Always provide a fixed height via className on Billboard.Chart
+2. Use consistent colors across related datasets
+3. For area charts, use fillOpacity for better visualization
+4. When using Datapoints, always place them inside a Dataset
+5. Use meaningful names for datasets to populate the legend
 
 ## Limitations
 
-1. Datapoints must be children of Dataset components
-2. Some chart types (bubble, scatter) require additional Highcharts modules
-3. Custom chart types are not yet supported
-4. Animation customization is limited
+1. The library currently supports basic chart types from Recharts
+2. Custom Recharts components must be added through the base Billboard props
+3. Some Recharts features require direct props configuration
+4. Animation options are inherited from Recharts defaults
+
+## Browser Support
+
+Supports all modern browsers that support SVG and React.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+MIT

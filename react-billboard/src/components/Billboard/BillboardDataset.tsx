@@ -1,12 +1,10 @@
-import React, { useEffect, useRef, Children } from 'react';
-import { BillboardDatasetProps, DatasetStyle } from '../../types';
-import { useBillboard } from '../../context/BillboardContext';
+import React, { useMemo } from 'react';
+import { BillboardDatasetProps } from '../../types';
 import { BillboardDatapoint } from './BillboardDatapoint';
 
 interface ExtendedBillboardDatasetProps extends Omit<BillboardDatasetProps, 'data'> {
   data?: BillboardDatasetProps['data'];
   children?: React.ReactNode;
-  style?: DatasetStyle;  // Add style prop
 }
 
 export const BillboardDataset: React.FC<ExtendedBillboardDatasetProps> = ({
@@ -16,50 +14,34 @@ export const BillboardDataset: React.FC<ExtendedBillboardDatasetProps> = ({
   children,
   style,
 }) => {
-  const { updateDataset } = useBillboard();
-  const isInitialMount = useRef(true);
-
-  useEffect(() => {
-    const dataFromChildren = children 
-      ? Children.toArray(children)
-          .filter(child => React.isValidElement(child) && child.type === BillboardDatapoint)
-          .map(child => {
-            const props = (child as React.ReactElement).props;
-            return {
-              x: props.x,
-              y: props.y,
-              z: props.z,
-              name: props.name,
-              color: props.style?.color || props.color,
-              marker: props.style && {
-                radius: props.style.radius,
-                symbol: props.style.symbol,
-                fillColor: props.style.fillColor,
-                lineWidth: props.style.lineWidth,
-                lineColor: props.style.lineColor,
-              },
-              className: props.style?.className,
-            };
-          })
-      : data || [];
-
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      updateDataset({
-        name,
-        data: dataFromChildren,
-        color,
-        style,
-      });
-    } else if (dataFromChildren.length > 0) {
-      updateDataset({
-        name,
-        data: dataFromChildren,
-        color,
-        style,
-      });
+  // Convert children Datapoints to data array if present
+  const dataPoints = useMemo(() => {
+    if (children) {
+      return React.Children.toArray(children)
+        .filter(child => 
+          React.isValidElement(child) && 
+          (child.type === BillboardDatapoint || (child.type as any)?.displayName === 'BillboardDatapoint')
+        )
+        .map(child => {
+          const props = (child as React.ReactElement).props;
+          return {
+            x: props.x,
+            y: props.y,
+            name: props.name,
+            color: props.style?.color || props.color
+          };
+        });
     }
-  }, [data, name, color, updateDataset, children, style]);
+    return data || [];
+  }, [children, data]);
 
-  return null;
+  // Make the dataset data available to parent components
+  return {
+    name,
+    data: dataPoints,
+    color,
+    style,
+  };
 };
+
+BillboardDataset.displayName = 'BillboardDataset';

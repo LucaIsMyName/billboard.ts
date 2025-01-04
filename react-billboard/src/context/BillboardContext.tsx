@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { BillboardContextType, BillboardOptions, Dataset } from '../types';
 
 const BillboardContext = createContext<BillboardContextType | undefined>(undefined);
@@ -10,29 +10,17 @@ export interface BillboardProviderProps {
 
 export const BillboardProvider: React.FC<BillboardProviderProps> = ({
   children,
-  options,
+  options: initialOptions,
 }) => {
-  const [datasets, setDatasets] = useState<Dataset[]>(options.datasets || []);
+  // Only store datasets from props, component-based datasets will be handled directly
+  const [propDatasets] = useState<Dataset[]>(initialOptions.datasets || []);
 
-  const updateDataset = useCallback((dataset: Dataset) => {
-    setDatasets(prev => {
-      const existing = prev.findIndex(d => d.name === dataset.name);
-      if (existing >= 0) {
-        const newDatasets = [...prev];
-        newDatasets[existing] = dataset;
-        return newDatasets;
-      }
-      return [...prev, dataset];
-    });
-  }, []); // No dependencies needed as it's a stable function
-
-  const value = useMemo(() => ({ 
+  const value = {
     options: {
-      ...options,
-      datasets
-    },
-    updateDataset
-  }), [options, datasets, updateDataset]);
+      ...initialOptions,
+      datasets: propDatasets,
+    }
+  };
 
   return (
     <BillboardContext.Provider value={value}>
@@ -43,7 +31,7 @@ export const BillboardProvider: React.FC<BillboardProviderProps> = ({
 
 export const useBillboard = () => {
   const context = useContext(BillboardContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useBillboard must be used within a BillboardProvider');
   }
   return context;
