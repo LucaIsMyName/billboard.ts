@@ -10,13 +10,21 @@ var React3__default = /*#__PURE__*/_interopDefault(React3);
 
 // src/context/BillboardContext.tsx
 var BillboardContext = React3.createContext(void 0);
-var BillboardProvider = ({
-  children,
-  options: initialOptions
-}) => {
+var BillboardProvider = ({ children, options: initialOptions }) => {
+  const defaultOptions = {
+    legend: {
+      show: true,
+      className: "",
+      position: "bottom"
+    },
+    tooltip: {
+      show: true
+    }
+  };
   const [propDatasets] = React3.useState(initialOptions.datasets || []);
   const value = {
     options: {
+      ...defaultOptions,
       ...initialOptions,
       datasets: propDatasets
     }
@@ -54,7 +62,7 @@ var BillboardDatapoint = (props) => {
   return /* @__PURE__ */ jsxRuntime.jsx(
     "div",
     {
-      style: { display: "none" },
+      style: { display: "block" },
       "data-billboard-datapoint": true,
       "data-point": JSON.stringify(props)
     }
@@ -123,7 +131,7 @@ var DataComponents = {
   scatter: recharts.Scatter
 };
 var BillboardChart = ({ children, className, x, y }) => {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
   const { options } = useBillboard();
   const childDatasets = React3__default.default.Children.toArray(children).filter((child) => {
     var _a2;
@@ -184,7 +192,7 @@ var BillboardChart = ({ children, className, x, y }) => {
         width: "100%",
         height: "100%",
         children: /* @__PURE__ */ jsxRuntime.jsxs(recharts.FunnelChart, { children: [
-          (_e = options.hasTooltip) != null ? _e : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
+          (_f = (_e = options.tooltip) == null ? void 0 : _e.show) != null ? _f : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
           /* @__PURE__ */ jsxRuntime.jsx(
             recharts.Funnel,
             {
@@ -237,7 +245,7 @@ var BillboardChart = ({ children, className, x, y }) => {
             aspectRatio: options.aspectRatio || 4 / 3,
             children: [
               /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
-              options.hasLegend && /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
+              ((_g = options.legend) == null ? void 0 : _g.show) && /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
             ]
           }
         )
@@ -268,8 +276,8 @@ var BillboardChart = ({ children, className, x, y }) => {
               name: "y"
             }
           ),
-          (_f = options.hasTooltip) != null ? _f : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, { cursor: { strokeDasharray: "3 3" } }),
-          (_g = options.hasLegend) != null ? _g : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, { className: options.legend.className || "" }),
+          (_i = (_h = options.tooltip) == null ? void 0 : _h.show) != null ? _i : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, { cursor: { strokeDasharray: "3 3" } }),
+          (_l = (_j = options.legend) == null ? void 0 : _j.show) != null ? _l : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, { className: ((_k = options.legend) == null ? void 0 : _k.className) || "" }),
           allDatasets.map((dataset) => /* @__PURE__ */ jsxRuntime.jsx(
             recharts.Scatter,
             {
@@ -319,8 +327,8 @@ var BillboardChart = ({ children, className, x, y }) => {
               },
               index
             )),
-            (_h = options.hasTooltip) != null ? _h : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
-            (_i = options.hasLegend) != null ? _i : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
+            (_n = (_m = options.tooltip) == null ? void 0 : _m.show) != null ? _n : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
+            (_p = (_o = options.legend) == null ? void 0 : _o.show) != null ? _p : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
           ] })
         }
       ) });
@@ -334,7 +342,7 @@ var BillboardChart = ({ children, className, x, y }) => {
           /* @__PURE__ */ jsxRuntime.jsx(
             recharts.Pie,
             {
-              data: (_k = (_j = allDatasets[0]) == null ? void 0 : _j.data) == null ? void 0 : _k.map((point) => ({
+              data: (_r = (_q = allDatasets[0]) == null ? void 0 : _q.data) == null ? void 0 : _r.map((point) => ({
                 name: point.x,
                 value: point.y,
                 fill: point.color
@@ -344,8 +352,8 @@ var BillboardChart = ({ children, className, x, y }) => {
               label: true
             }
           ),
-          (_l = options.hasTooltip) != null ? _l : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
-          (_m = options.hasLegend) != null ? _m : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
+          (_t = (_s = options.tooltip) == null ? void 0 : _s.show) != null ? _t : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
+          (_v = (_u = options.legend) == null ? void 0 : _u.show) != null ? _v : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {})
         ] })
       }
     ) });
@@ -370,8 +378,8 @@ var BillboardChart = ({ children, className, x, y }) => {
               }
             ),
             /* @__PURE__ */ jsxRuntime.jsx(recharts.YAxis, { label: (y == null ? void 0 : y.title) ? { value: y.title, angle: -90, position: "left" } : void 0 }),
-            /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
-            /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {}),
+            (_x = (_w = options.tooltip) == null ? void 0 : _w.show) != null ? _x : /* @__PURE__ */ jsxRuntime.jsx(recharts.Tooltip, {}),
+            (_z = (_y = options.legend) == null ? void 0 : _y.show) != null ? _z : /* @__PURE__ */ jsxRuntime.jsx(recharts.Legend, {}),
             allDatasets.map((dataset) => {
               var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2;
               switch (options.type) {

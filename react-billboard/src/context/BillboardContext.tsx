@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-import { BillboardContextType, BillboardOptions, Dataset } from '../types';
+import React, { createContext, useContext, useState } from "react";
+import { BillboardContextType, BillboardOptions, Dataset } from "../types";
 
 const BillboardContext = createContext<BillboardContextType | undefined>(undefined);
 
@@ -8,31 +8,35 @@ export interface BillboardProviderProps {
   options: BillboardOptions;
 }
 
-export const BillboardProvider: React.FC<BillboardProviderProps> = ({
-  children,
-  options: initialOptions,
-}) => {
+export const BillboardProvider: React.FC<BillboardProviderProps> = ({ children, options: initialOptions }) => {
+  const defaultOptions = {
+    legend: {
+      show: true,
+      className: "",
+      position: "bottom" as const,
+    },
+    tooltip: {
+      show: true,
+    },
+  };
   // Only store datasets from props, component-based datasets will be handled directly
   const [propDatasets] = useState<Dataset[]>(initialOptions.datasets || []);
 
   const value = {
     options: {
+      ...defaultOptions,
       ...initialOptions,
       datasets: propDatasets,
-    }
+    },
   };
 
-  return (
-    <BillboardContext.Provider value={value}>
-      {children}
-    </BillboardContext.Provider>
-  );
+  return <BillboardContext.Provider value={value}>{children}</BillboardContext.Provider>;
 };
 
 export const useBillboard = () => {
   const context = useContext(BillboardContext);
   if (!context) {
-    throw new Error('useBillboard must be used within a BillboardProvider');
+    throw new Error("useBillboard must be used within a BillboardProvider");
   }
   return context;
 };

@@ -8,10 +8,9 @@ export interface BillboardDatapointProps extends Omit<DataPoint, 'name'> {
 }
 
 export const BillboardDatapoint: React.FC<BillboardDatapointProps> = (props) => {
-  // Just render a hidden div with the data attributes
   return (
     <div
-      style={{ display: 'none' }}
+      style={{ display: 'block' }}
       data-billboard-datapoint={true}
       data-point={JSON.stringify(props)}
     />

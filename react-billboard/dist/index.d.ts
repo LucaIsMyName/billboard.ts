@@ -66,10 +66,14 @@ interface BillboardOptions {
     title?: string;
     description?: string;
     className?: string;
-    hasLegend?: boolean;
-    legendPosition?: "top" | "bottom" | "left" | "right";
-    hasTooltip?: boolean;
-    hasZoom?: boolean;
+    legend?: {
+        show?: boolean;
+        className?: string;
+        position?: "top" | "bottom" | "left" | "right";
+    };
+    tooltip?: {
+        show?: boolean;
+    };
     strokeColor?: string;
     fillColor?: string;
     aspectRatio?: number;

@@ -28,6 +28,16 @@ export const generatePastWeekData = () => {
   });
 };
 
+export const yearlyData = [
+  { x: "2015", y: generateRandomValue(1000, 5000), color: getRandomColor() },
+  { x: "2016", y: generateRandomValue(1000, 5000), color: getRandomColor() },
+  { x: "2017", y: generateRandomValue(1000, 5000), color: getRandomColor() },
+  { x: "2018", y: generateRandomValue(1000, 5000), color: getRandomColor() },
+  { x: "2019", y: generateRandomValue(1000, 5000), color: getRandomColor() },
+  { x: "2020", y: generateRandomValue(1000, 5000), color: getRandomColor() },
+  { x: "2021", y: generateRandomValue(1000, 5000), color: getRandomColor() },
+];
+
 // Mock user behavior data
 export const funnelData = [
   { x: "Page Views", y: Math.floor(Math.random() * 310000), color: getRandomColor() },

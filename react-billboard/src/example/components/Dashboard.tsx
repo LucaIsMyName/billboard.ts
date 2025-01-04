@@ -1,13 +1,14 @@
 import React from "react";
 import { Billboard } from "../../components/Billboard/Billboard";
 import { RealTimeVisitors } from "./RealTimeVisitors";
-import { generatePastWeekData, funnelData, trafficSources, deviceData, getRandomColor } from "../utils/mockData";
+import { generatePastWeekData, funnelData, yearlyData, trafficSources, deviceData, getRandomColor } from "../utils/mockData";
 
 export const Dashboard = () => {
   const weeklyData = generatePastWeekData();
 
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50/50">
       <div className=" mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics Dashboard</h1>
 
@@ -21,17 +22,17 @@ export const Dashboard = () => {
           <div className="bg-white rounded-lg shadow-lg p-4">
             <h2 className="text-lg font-semibold mb-4">Weekly Overview</h2>
             {/* Props-based example */}
-            <Billboard type="area">
+            <Billboard type="pie">
               <Billboard.Chart className="h-[300px]">
                 <Billboard.Dataset
                   name="Visitors"
                   data={weeklyData}
                   color={getRandomColor()}
-                  style={{ strokeWidth: 2 }}
+                  style={{ strokeWidth: 2, dot: true, innerRadius: 4 }}
                 />
                 <Billboard.Dataset
                   name="Unique Visitors"
-                  data={weeklyData.map((point) => ({ ...point, y: point.y * (Math.random() / 2) }))}
+                  data={yearlyData}
                   color={getRandomColor()}
                   style={{ strokeWidth: 2 }}
                 />
@@ -118,7 +119,9 @@ export const Dashboard = () => {
 
           <div className="bg-white rounded-lg shadow-lg p-4">
             <h2 className="text-lg font-semibold mb-4">Devices</h2>
-            <Billboard type="bar">
+            <Billboard
+              type="bar"
+              options={{}}>
               <Billboard.Chart className="h-[300px]">
                 <Billboard.Dataset name="Devices">
                   {deviceData.map((device) => (
@@ -126,7 +129,9 @@ export const Dashboard = () => {
                       key={device.x}
                       x={device.x}
                       y={device.y}
+                      color={getRandomColor()}
                       style={{
+                        color: getRandomColor(),
                         fill: getRandomColor(),
                       }}
                     />
@@ -138,10 +143,10 @@ export const Dashboard = () => {
         </section>
 
         {/* API Examples Section */}
-        <section className="mt-12 bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-xl font-bold mb-6">Billboard Usage Examples</h2>
+        <details className="mt-12 bg-white rounded-lg shadow-lg p-8">
+          <summary className="text-xl font-bold">Billboard Usage Examples</summary>
 
-          <div className="prose max-w-none">
+          <div className="prose max-w-none pt-6">
             <h3 className="text-lg font-semibold mb-4">Props-based Usage</h3>
             <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
               {`<Billboard 
@@ -169,7 +174,7 @@ export const Dashboard = () => {
 </Billboard>`}
             </pre>
           </div>
-        </section>
+        </details>
       </div>
     </div>
   );

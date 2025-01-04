@@ -143,7 +143,7 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
           width="100%"
           height="100%">
           <FunnelChart>
-            {options.hasTooltip ?? <Tooltip />}
+            {options.tooltip?.show ?? <Tooltip />}
             <Funnel
               dataKey="value"
               data={funnelData}
@@ -192,7 +192,7 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
             fill={options.fillColor || "#888"}
             aspectRatio={options.aspectRatio || 4 / 3}>
             <Tooltip />
-            {options.hasLegend && <Legend />}
+            {options.legend?.show&& <Legend />}
           </Treemap>
         </ResponsiveContainer>
       </div>
@@ -217,8 +217,8 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
               dataKey="y"
               name="y"
             />
-            {options.hasTooltip ?? <Tooltip cursor={{ strokeDasharray: "3 3" }} />}
-            {options.hasLegend ?? <Legend className={options.legend.className || ""} />}
+            {options.tooltip?.show ?? <Tooltip cursor={{ strokeDasharray: "3 3" }} />}
+            {options.legend?.show?? <Legend className={options.legend?.className || ""} />}
             {allDatasets.map((dataset) => (
               <Scatter
                 key={dataset.name}
@@ -271,8 +271,8 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
                   }}
                 />
               ))}
-              {options.hasTooltip ?? <Tooltip />}
-              {options.hasLegend ?? <Legend />}
+              {options.tooltip?.show ?? <Tooltip />}
+              {options.legend?.show?? <Legend />}
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -295,8 +295,8 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
               nameKey="name"
               label
             />
-            {options.hasTooltip ?? <Tooltip />}
-            {options.hasLegend ?? <Legend />}
+            {options.tooltip?.show ?? <Tooltip />}
+            {options.legend?.show?? <Legend />}
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -346,31 +346,8 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
             label={x?.title ? { value: x.title, position: "bottom" } : undefined}
           />
           <YAxis label={y?.title ? { value: y.title, angle: -90, position: "left" } : undefined} />
-          <Tooltip />
-          <Legend />
-          {/* {allDatasets.map((dataset) => {
-            const Component = DataComponents[options.type as DataType] || Line;
-            return (
-              <Component
-                key={dataset.name}
-                type="monotone"
-                dataKey={dataset.name}
-                stroke={dataset.color}
-                fill={dataset.color}
-                strokeWidth={dataset.style?.strokeWidth}
-                fillOpacity={dataset.style?.fillOpacity}
-                dot={
-                  dataset.style?.dot
-                    ? {
-                        strokeWidth: dataset.style.strokeWidth || 1,
-                        r: dataset.style.dotRadius || 3,
-                        fill: dataset.color,
-                      }
-                    : false
-                }
-              />
-            );
-          })} */}
+          {options.tooltip?.show ??<Tooltip />}
+          {options.legend?.show?? <Legend />}
           {allDatasets.map((dataset) => {
             switch (options.type) {
               case "line":
