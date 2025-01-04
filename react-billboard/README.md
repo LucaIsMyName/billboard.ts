@@ -14,7 +14,7 @@ npm install react-billboard
 ```tsx
 import { Billboard } from 'react-billboard';
 
-const MyChart = () => (
+export const MyChartComponent = () => (
   <Billboard 
     type="line"
     datasets={[{
@@ -30,9 +30,7 @@ const MyChart = () => (
         dot: true,
       }
     }]}
-  >
-    <Billboard.Chart className="h-[400px]" />
-  </Billboard>
+  />
 );
 ```
 
@@ -120,7 +118,14 @@ Chart container component.
     max?: number;
   }
   ```
-- `y?`: Y-axis configuration (same as x)
+- `y?`: Y-axis configuration 
+  ```typescript
+    {
+      title?: string;
+      min?: number;
+      max?: number;
+    }
+    ```
 - `children?`: Dataset components
 
 ### `<Billboard.Dataset>`
@@ -146,15 +151,16 @@ Dataset container component.
 Individual data point component. Must be a child of Dataset.
 
 #### Props
-- `x`: X value (string | number)
-- `y`: Y value (number)
+- `x?`: X value (string | number)
+- `y?`: Y value (number)
+- `z?`: Z value (number)
 - `color?`: Point color
 - `style?`: Point-specific styling
 
 ## TypeScript Types
 
 ```typescript
-type ChartType = 'line' | 'area' | 'bar' | 'scatter' | 'pie';
+type ChartType = 'line' | 'area' | 'bar' | 'scatter' | 'pie' | 'treemap';
 
 interface DataPoint {
   x: string | number;

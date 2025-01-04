@@ -6,7 +6,6 @@ import { generatePastWeekData, funnelData, yearlyData, trafficSources, deviceDat
 export const Dashboard = () => {
   const weeklyData = generatePastWeekData();
 
-
   return (
     <div className="min-h-screen bg-gray-50/50">
       <div className=" mx-auto">
@@ -83,13 +82,15 @@ export const Dashboard = () => {
             <Billboard type="pie">
               <Billboard.Chart className="h-[300px]">
                 {/* Using Datapoint components example */}
-                <Billboard.Dataset name="Devices">
+                <Billboard.Dataset
+                  name="Devices"
+                  color={getRandomColor()}>
                   {deviceData.map((device) => (
                     <Billboard.Datapoint
                       key={device.x}
                       x={device.x}
                       y={device.y}
-                      color={device.color}
+                      color={getRandomColor()}
                     />
                   ))}
                 </Billboard.Dataset>
@@ -123,17 +124,14 @@ export const Dashboard = () => {
               type="bar"
               options={{}}>
               <Billboard.Chart className="h-[300px]">
-                <Billboard.Dataset name="Devices">
+                <Billboard.Dataset
+                  name="Devices"
+                  color={getRandomColor()}>
                   {deviceData.map((device) => (
                     <Billboard.Datapoint
                       key={device.x}
                       x={device.x}
                       y={device.y}
-                      color={getRandomColor()}
-                      style={{
-                        color: getRandomColor(),
-                        fill: getRandomColor(),
-                      }}
                     />
                   ))}
                 </Billboard.Dataset>
