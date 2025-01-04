@@ -12,11 +12,9 @@ export const BillboardDataset: React.FC<ExtendedBillboardDatasetProps> = ({
   name = '',
   color,
   children,
-  className,
   style,
 }) => {
-  // Convert children Datapoints to data array if present
-  const dataPoints = useMemo(() => {
+  const processedData = useMemo(() => {
     if (children) {
       return React.Children.toArray(children)
         .filter(child => 
@@ -36,14 +34,24 @@ export const BillboardDataset: React.FC<ExtendedBillboardDatasetProps> = ({
     return data || [];
   }, [children, data]);
 
-  // Make the dataset data available to parent components
-  return {
+  // Store the dataset info
+  const datasetInfo = {
     name,
-    data: dataPoints,
+    data: processedData,
     color,
-    style,
-    className,
+    style
   };
+
+  // Return a hidden div with the dataset info as a data attribute
+  return (
+    <div 
+      style={{ display: 'none' }}
+      data-billboard-dataset={true}
+      data-info={JSON.stringify(datasetInfo)}
+    >
+      {children}
+    </div>
+  );
 };
 
 BillboardDataset.displayName = 'BillboardDataset';

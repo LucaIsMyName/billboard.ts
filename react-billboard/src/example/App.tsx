@@ -1,5 +1,6 @@
 import React from "react";
 import { Billboard } from "../components/Billboard/Billboard";
+import { Legend } from "recharts";
 
 // Test data
 
@@ -15,6 +16,13 @@ const revenueData = mockData;
 const growthData = mockData;
 
 const profitData = mockData;
+
+const getRandomColor = () => {
+  // find a way to random generate hex colors and return them
+  let colors = ["#4299E1", "#48C999", "#8884d8", "#913ea0", "#ff7300", "#8884d8", "#82ca9d", "#ff7300", "#ff7500", "#ff71cc", "0033cf", "33cf33"];
+
+  return colors[Math.floor(Math.random() * colors.length * +1)];
+};
 
 export const App = () => {
   return (
@@ -37,7 +45,7 @@ export const App = () => {
               data: revenueData.map((point) => {
                 return { x: point.x, y: point.y * Math.random() };
               }),
-              color: "#4299E1",
+              color: getRandomColor(),
               style: {
                 strokeWidth: 2,
                 dot: true,
@@ -48,7 +56,7 @@ export const App = () => {
               data: revenueData.map((point) => {
                 return { x: point.x, y: (point.y / 2) * Math.random() };
               }),
-              color: "#3300E1",
+              color: getRandomColor(),
               style: {
                 strokeWidth: 2,
                 dot: true,
@@ -80,7 +88,7 @@ export const App = () => {
               data={profitData.map((point) => {
                 return { x: point.x, y: point.y * Math.random() };
               })}
-              color="#48C999"
+              color={getRandomColor()}
               style={{
                 fillOpacity: 0.3,
                 strokeWidth: 2,
@@ -98,7 +106,6 @@ export const App = () => {
           <Billboard.Chart className="h-[400px]">
             <Billboard.Dataset
               name="Revenue"
-              type="line"
               color="#8884d8"
               style={{
                 fillOpacity: 0.3,
@@ -110,8 +117,7 @@ export const App = () => {
             />
             <Billboard.Dataset
               name="Profit"
-              type="line"
-              color="#913ea0"
+              color={getRandomColor()}
               style={{
                 barSize: 10,
                 strokeWidth: 2,
@@ -122,13 +128,12 @@ export const App = () => {
             />
             <Billboard.Dataset
               name="Growth"
-              type="line"
               color="#ff7300"
               style={{
                 strokeWidth: 2,
               }}
               data={growthData.map((point) => {
-                return { x: point.x, y: point.y * Math.random() };
+                return { x: point.x, y: point.y * Math.random(), color: getRandomColor() };
               })}
             />
           </Billboard.Chart>
@@ -138,40 +143,55 @@ export const App = () => {
           <Billboard.Chart className="h-[400px]">
             <Billboard.Dataset
               name="Inner Ring"
-              color="#8884d8"
+              color={getRandomColor()}
               style={{
                 outerRadius: 60,
                 label: true,
               }}
               data={[1, 2, 3].map((i) => {
-                return { x: `A${i}`, y: Math.floor(Math.random() * 100) };
+                return { x: `A${i}`, y: Math.floor(Math.random() * 100), color: getRandomColor() };
+              })}
+            />
+            <Billboard.Dataset
+              name="Middle Ring"
+              color={`${getRandomColor()}`}
+              style={{
+                outerRadius: 60,
+                label: false,
+              }}
+              data={[1, 2, 3].map((i) => {
+                return { x: `B${i}`, y: Math.floor(Math.random() * 100), color: getRandomColor() };
               })}
             />
             <Billboard.Dataset
               name="Outer Ring"
-              color="#82ca9d"
+              color={`${getRandomColor()}`}
               style={{
                 innerRadius: 70,
                 outerRadius: 90,
-                label: true,
+                label: false,
               }}
               data={[1, 2, 3].map((i) => {
-                return { x: `A${i}`, y: Math.floor(Math.random() * 100) };
+                return { x: `C${i}`, y: Math.floor(Math.random() * 100), color: getRandomColor() };
               })}
             />
           </Billboard.Chart>
         </Billboard>
         // Scatter Plot Example
         <Billboard
+          options={{
+            title: "Revenue vs. Profit",
+            description: "This is a simple scatter plot example.",
+            hasLegend: false,
+            hasTooltip: false,
+          }}
           datasets={[
             {
               name: "Revenue",
-              data: [
-                { x: 1, y: 1000 * Math.random(), z: 0 },
-                { x: 2, y: 1000 * Math.random(), z: 0 },
-                { x: 3, y: 1000 * Math.random(), z: 0 },
-              ],
-              color: "#4299E1",
+              data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => {
+                return { x: i, y: i * 1000 * Math.random(), z: 0 };
+              }),
+              color: getRandomColor(),
               style: {
                 strokeWidth: 2,
                 dot: true,
@@ -179,12 +199,10 @@ export const App = () => {
             },
             {
               name: "Profit",
-              data: [
-                { x: 1, y: 1000 * Math.random(), z: 0 },
-                { x: 2, y: 1000 * Math.random(), z: 0 },
-                { x: 3, y: 1000 * Math.random(), z: 0 },
-              ],
-              color: "#48C999",
+              data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => {
+                return { x: i, y: 1000 * Math.random(), z: 0 };
+              }),
+              color: getRandomColor(),
               style: {
                 strokeWidth: 2,
                 dot: true,
@@ -194,28 +212,95 @@ export const App = () => {
           type="scatter">
           <Billboard.Chart className="h-[400px]"></Billboard.Chart>
         </Billboard>
-        <Billboard type="treemap">
+        <Billboard
+          options={{
+            title: "Revenue vs. Profit",
+            description: "This is a simple scatter plot example.",
+            hasLegend: false,
+            hasTooltip: false,
+            style: {
+              strokeWidth: 2,
+              dot: true,
+            },
+          }}
+          type="treemap">
           <Billboard.Chart className="h-[400px]">
             <Billboard.Dataset
-              className="ml-32 -mr-32 h-[400px]"
-              name="Revenue"
-              color="#8884d8"
+              name="Revenue Stream 1"
               data={[
-                { name: "A", size: 1000 * Math.random() },
-                { name: "B", size: 1000 * Math.random() },
-                { name: "C", size: 1000 * Math.random() },
+                { color: getRandomColor(), name: "Product A", size: 1000 + Math.random() * 2000 },
+                { color: getRandomColor(), name: "Product B", size: 1000 + Math.random() * 2000 },
+                { color: getRandomColor(), name: "Product C", size: 1000 + Math.random() * 2000 },
               ]}
             />
+          </Billboard.Chart>
+        </Billboard>
+        <Billboard type="pie">
+          <Billboard.Chart className="h-[400px]">
             <Billboard.Dataset
-              className="ml-32 h-[500px]"
               name="Profit"
-              color="#82ca9d"
-              data={[
-                { name: "A", size: 500 * Math.random() },
-                { name: "B", size: 500 * Math.random() },
-                { name: "C", size: 500 * Math.random() },
-              ]}
-            />
+              color={getRandomColor()}
+              style={{
+                strokeWidth: 2,
+                dot: true,
+              }}>
+              <Billboard.Datapoint
+                x={"Product A1"}
+                y={Math.floor(Math.random() * 1000)}
+                name="One"
+                color={getRandomColor()}
+              />
+              <Billboard.Datapoint
+                x={"Product A2"}
+                y={Math.floor(Math.random() * 500)}
+                name="Two"
+                color={getRandomColor()}
+              />
+              <Billboard.Datapoint
+                x={"Product A3"}
+                y={Math.floor(Math.random() * 500)}
+                name="Three"
+                color={getRandomColor()}
+              />
+              <Billboard.Datapoint
+                x={"Product A4"}
+                y={Math.floor(Math.random() * 500)}
+                name="Four"
+                color={getRandomColor()}
+              />
+            </Billboard.Dataset>
+            <Billboard.Dataset
+              name="Revenue"
+              color={getRandomColor()}
+              style={{
+                strokeWidth: 2,
+                dot: true,
+              }}>
+              <Billboard.Datapoint
+                x={1}
+                y={Math.floor(Math.random() * 1000)}
+                name="One"
+                color={getRandomColor()}
+              />
+              <Billboard.Datapoint
+                x={2}
+                y={Math.floor(Math.random() * 1000)}
+                name="Two"
+                color={getRandomColor()}
+              />
+              <Billboard.Datapoint
+                x={3}
+                y={Math.floor(Math.random() * 1000)}
+                name="Three"
+                color={getRandomColor()}
+              />
+              <Billboard.Datapoint
+                x={4}
+                y={Math.floor(Math.random() * 1000)}
+                name="Four"
+                color={getRandomColor()}
+              />
+            </Billboard.Dataset>
           </Billboard.Chart>
         </Billboard>
       </div>

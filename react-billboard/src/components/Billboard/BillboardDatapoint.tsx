@@ -1,25 +1,21 @@
-import React from "react";
-import { DataPoint, DataPointStyle } from "../../types";
+import React from 'react';
+import { DataPoint, DataPointStyle } from '../../types';
 
-export interface BillboardDatapointProps extends Omit<DataPoint, "name"> {
+export interface BillboardDatapointProps extends Omit<DataPoint, 'name'> {
   name?: string;
   z?: number;
   style?: DataPointStyle;
 }
 
 export const BillboardDatapoint: React.FC<BillboardDatapointProps> = (props) => {
-  console.log("Datapoint Props:", props);
-
+  // Just render a hidden div with the data attributes
   return (
     <div
-      data-billboard-datapoint
-      data-billboard-datapoint-random-id={Math.floor(Math.random() * 1000000) + "-" + Date.now() + props.x + props.y}
-      style={{ display: "none", ...props.style }}
-      data-x={props.x}
-      data-y={props.y}
-      data-style={JSON.stringify(props.style)}
+      style={{ display: 'none' }}
+      data-billboard-datapoint={true}
+      data-point={JSON.stringify(props)}
     />
   );
 };
 
-BillboardDatapoint.displayName = "BillboardDatapoint";
+BillboardDatapoint.displayName = 'BillboardDatapoint';

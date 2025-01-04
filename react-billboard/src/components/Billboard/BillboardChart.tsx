@@ -3,6 +3,7 @@ import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Scatter
 import { BillboardChartProps, Dataset } from "../../types";
 import { useBillboard } from "../../context/BillboardContext";
 import { BillboardDataset } from "./BillboardDataset";
+import { BillboardDatapoint } from "./BillboardDatapoint";
 
 const ChartComponents = {
   line: LineChart,
@@ -30,24 +31,35 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
     .filter((child) => React.isValidElement(child) && (child.type === BillboardDataset || (child.type as any)?.displayName === "BillboardDataset"))
     .map((child) => {
       const dataset = child as React.ReactElement;
-      console.log("Dataset Element:", dataset);
-      console.log("Dataset Props:", dataset.props);
-
-      // Handle both data prop and children datapoints
-      let datasetInfo;
-      if (dataset.props.ref?.current) {
-        datasetInfo = dataset.props.ref.current;
-      } else {
-        datasetInfo = {
+      try {
+        if (dataset.props["data-billboard-dataset"]) {
+          return JSON.parse(dataset.props["data-info"]);
+        }
+        // Handle direct props
+        return {
           name: dataset.props.name,
-          data: dataset.props.data || [],
+          data:
+            dataset.props.data ||
+            React.Children.toArray(dataset.props.children)
+              .filter((datapoint) => React.isValidElement(datapoint) && (datapoint.type === BillboardDatapoint || (datapoint.type as any)?.displayName === "BillboardDatapoint"))
+              .map((datapoint) => {
+                const props = (datapoint as React.ReactElement).props;
+                return {
+                  x: props.x,
+                  y: props.y,
+                  name: props.name,
+                  color: props.style?.color || props.color,
+                };
+              }),
           color: dataset.props.color,
           style: dataset.props.style,
         };
+      } catch (error) {
+        console.error("Error processing dataset:", error);
+        return null;
       }
-      console.log("Dataset Info:", datasetInfo);
-      return datasetInfo;
-    });
+    })
+    .filter(Boolean);
 
   // Combine prop datasets with child datasets
   const allDatasets = [...(options.datasets || []), ...childDatasets];
@@ -76,37 +88,20 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
   const DataComponent = DataComponents[options.type] as typeof Line;
 
   if (options.type === "treemap") {
-    if (allDatasets.length > 1) {
-      const treemapData = allDatasets.map((dataset) => ({
-        name: dataset.name,
-        children: dataset.data.map((point: any) => ({
-          name: point.x,
-          size: point.y,
-        })),
-      }));
-      console.log("Treemap Data:", treemapData);
+    // Restructure data for treemap
+    const treemapData = {
+      name: "root",
+      children: allDatasets.flatMap((dataset) =>
+        dataset.data.map((point) => ({
+          name: point.name || String(point.x),
+          size: point.size || point.y,
+          fill: point.color || dataset.color,
+          category: dataset.name,
+        }))
+      ),
+    };
 
-      return (
-        <div className={className}>
-          <ResponsiveContainer
-            width="100%"
-            height="100%">
-            <div className="flex">
-              {treemapData.map((name, children) => (
-                <Treemap
-                  key={name}
-                  data={children}
-                  dataKey="size"
-                  aspectRatio={4 / 3}
-                  stroke="#fff"
-                  fill="#8884d8"
-                />
-              ))}
-            </div>
-          </ResponsiveContainer>
-        </div>
-      );
-    }
+    console.log("Treemap Data:", treemapData);
 
     return (
       <div className={className}>
@@ -114,38 +109,49 @@ export const BillboardChart: React.FC<BillboardChartProps> = ({ children, classN
           width="100%"
           height="100%">
           <Treemap
-            data={allDatasets[0]?.data}
+            data={treemapData.children}
+            width={400}
+            height={400}
+            className="treemap"
             dataKey="size"
-            aspectRatio={4 / 3}
-            stroke="#fff"
-            fill="#8884d8"
-          />
+            stroke={options.strokeColor || "#fff"}
+            fill={options.fillColor || "#888"}
+            aspectRatio={options.aspectRatio || 4 / 3}>
+            <Tooltip />
+            {options.hasLegend && <Legend />}
+          </Treemap>
         </ResponsiveContainer>
       </div>
     );
   }
 
   if (options.type === "scatter") {
-    console.log("Scatter Chart Datasets:", allDatasets);
     return (
       <div className={className}>
         <ResponsiveContainer
           width="100%"
           height="100%">
-          <ScatterChart>
+          <ScatterChart margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey="name"
-              label={x?.title ? { value: x.title, position: "bottom" } : undefined}
+              type="number"
+              dataKey="x"
+              name="x"
             />
-            <YAxis label={y?.title ? { value: y.title, angle: -90, position: "left" } : undefined} />
-            {options.hasTooltip ?? <Tooltip />}
-            {options.hasLegend ?? <Legend />}
+            <YAxis
+              type="number"
+              dataKey="y"
+              name="y"
+            />
+            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+            <Legend />
             {allDatasets.map((dataset) => (
-              <DataComponent
+              <Scatter
                 key={dataset.name}
+                name={dataset.name}
                 data={dataset.data}
                 fill={dataset.color}
+                stroke={dataset.color}
               />
             ))}
           </ScatterChart>
