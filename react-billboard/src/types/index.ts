@@ -1,38 +1,45 @@
-export type ChartType = 'line' | 'area' | 'scatter' | 'bar' | 'pie';
+export type ChartType = 'line' | 'area' | 'bar' | 'scatter' | 'pie' | 'composed' | "treemap";
+
+export type DataComponentType = 'line' | 'area' | 'bar' | 'scatter' | 'pie';
 
 export interface AxisOptions {
   title?: string;
   min?: number;
   max?: number;
+  scale?: 'auto' | 'linear' | 'pow' | 'sqrt' | 'log' | 'identity' | 'time' | 'band' | 'point' | 'ordinal';
 }
 
 export interface DataPoint {
   x: number | string;
   y: number;
+  name?: string;
   color?: string;
-  [key: string]: any;
 }
 
 export interface DataPointStyle {
-  fill?: string;
-  stroke?: string;
   strokeWidth?: number;
-  strokeDasharray?: string;
-  opacity?: number;
-  radius?: number;
+  fillOpacity?: number;
+  dot?: boolean;
+  type?: 'monotone' | 'linear' | 'step';
+  barSize?: number;
+  outerRadius?: number;
+  innerRadius?: number;
+  cx?: string;
+  cy?: string;
+  label?: boolean;
 }
 
 export interface DatasetStyle {
-  stroke?: string;
-  fill?: string;
-  fillOpacity?: number;
   strokeWidth?: number;
-  strokeDasharray?: string;
-  dot?: boolean | object;
-  activeDot?: object;
-  label?: boolean | object;
-  connectNulls?: boolean;
-  type?: 'basis' | 'linear' | 'monotone' | 'natural' | 'step';
+  fillOpacity?: number;
+  dot?: boolean;
+  type?: 'monotone' | 'linear' | 'step';
+  barSize?: number;
+  outerRadius?: number;
+  innerRadius?: number;
+  cx?: string;
+  cy?: string;
+  label?: boolean;
 }
 
 export interface Dataset {
@@ -40,22 +47,24 @@ export interface Dataset {
   data: DataPoint[];
   color?: string;
   style?: DatasetStyle;
+  componentType?: DataComponentType; // For composed charts
 }
 
 export interface BillboardOptions {
   type: ChartType;
-  variant?: string;
-  title?: string;
-  description?: string;
-  xAxis?: AxisOptions;
-  yAxis?: AxisOptions;
   datasets?: Dataset[];
   className?: string;
+  hasLegend?: boolean;
+  legendPosition?: 'top' | 'bottom' | 'left' | 'right';
+  hasTooltip?: boolean;
+  hasZoom?: boolean;
+  strokeColor?: string;
+  fillColor?: string;
+  aspectRatio?: number;
 }
 
 export interface BillboardContextType {
   options: BillboardOptions;
-  updateDataset: (dataset: Dataset) => void;
 }
 
 export interface BillboardComponentProps {
@@ -66,6 +75,7 @@ export interface BillboardComponentProps {
 export interface BillboardChartProps extends BillboardComponentProps {
   x?: AxisOptions;
   y?: AxisOptions;
+  options: BillboardOptions;
 }
 
 export interface BillboardDatasetProps {
@@ -73,4 +83,6 @@ export interface BillboardDatasetProps {
   data?: DataPoint[];
   color?: string;
   style?: DatasetStyle;
+  componentType?: DataComponentType;
+  className?: string;
 }

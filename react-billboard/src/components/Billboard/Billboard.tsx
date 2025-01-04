@@ -24,12 +24,12 @@ interface BillboardComponent extends React.FC<BillboardProps> {
 const BillboardBase: React.FC<BillboardProps> = ({ children, ...options }) => {
   return (
     <BillboardProvider options={options}>
-      <div className={options.className}>{children || <BillboardChart />}</div>
+      <div className={options.className}>{children || <BillboardChart options={options} />}</div>
     </BillboardProvider>
   );
 };
 
-export const Billboard = Object.assign(BillboardBase, {
+export const Billboard: BillboardComponent = Object.assign(BillboardBase, {
   Title: BillboardTitle,
   Description: BillboardDescription,
   Chart: BillboardChart,

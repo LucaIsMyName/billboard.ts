@@ -12,6 +12,7 @@ export const BillboardDataset: React.FC<ExtendedBillboardDatasetProps> = ({
   name = '',
   color,
   children,
+  className,
   style,
 }) => {
   // Convert children Datapoints to data array if present
@@ -41,6 +42,7 @@ export const BillboardDataset: React.FC<ExtendedBillboardDatasetProps> = ({
     data: dataPoints,
     color,
     style,
+    className,
   };
 };
 
